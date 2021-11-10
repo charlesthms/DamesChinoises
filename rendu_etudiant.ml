@@ -36,11 +36,11 @@ type configuration = case_coloree list * couleur list
  
 let est_dans_losange = fun (a:case) ->
   let (i, j, k) = a in 
-  ( j >= (-dim+1) / 2) && ( j <= (dim+1)/2 ) && ( k >= -dim ) && ( k <= dim ) ;;
+  j >= -dim && j <= dim && k >= -dim && k <= dim ;;
 
 let est_dans_etoile = fun (a:case) ->
   let (i, j, k) = a in
-  i <= (2*dim) && i >= (-2*dim) && j <= (2*dim) && j >= (-2*dim) && k <= (2*dim) && k >= (-2*dim) ;;
+  (est_dans_losange a || (j >= -dim && j <= dim && i >= -dim && i <= dim || k >= -dim && k <= dim && i >= -dim && i <= dim)) && i+j+k=0 ;;
 
 
 let configuration_initial = ([], [ Vert; Jaune; Rouge; Noir; Bleu; Marron ])
@@ -48,7 +48,8 @@ let configuration_initial = ([], [ Vert; Jaune; Rouge; Noir; Bleu; Marron ])
 let liste_joueurs (_, l) = l
 
 let quelle_couleur = fun (a:case) (config:configuration) ->
-  if est_dans_losange a then Libre else Dehors ;;
+  let (i, j, k) = a in 
+  if est_dans_etoile a then Libre else Dehors;;
 
 type coup = Du of case * case | Sm of case list
 
