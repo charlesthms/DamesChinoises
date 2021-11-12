@@ -9,19 +9,6 @@ ocamlfind ocamldep -package js_of_ocaml-ppx -package js_of_ocaml -modules rendu_
 ocamlfind ocamlc -c -package js_of_ocaml-ppx -package js_of_ocaml -o html.cmo html.ml
 # Target: rendu_etudiant.cmo, tags: { package(js_of_ocaml), package(js_of_ocaml-ppx), byte, compile, extension:cmo, extension:ml, file:rendu_etudiant.cmo, file:rendu_etudiant.ml, implem, ocaml, quiet }
 ocamlfind ocamlc -c -package js_of_ocaml-ppx -package js_of_ocaml -o rendu_etudiant.cmo rendu_etudiant.ml
-+ ocamlfind ocamlc -c -package js_of_ocaml-ppx -package js_of_ocaml -o rendu_etudiant.cmo rendu_etudiant.ml
-File "rendu_etudiant.ml", line 51, characters 7-8:
-51 |   let (i, j, k) = a in 
-            ^
-Warning 26 [unused-var]: unused variable i.
-File "rendu_etudiant.ml", line 51, characters 10-11:
-51 |   let (i, j, k) = a in 
-               ^
-Warning 26 [unused-var]: unused variable j.
-File "rendu_etudiant.ml", line 51, characters 13-14:
-51 |   let (i, j, k) = a in 
-                  ^
-Warning 26 [unused-var]: unused variable k.
 # Target: display.cmo, tags: { package(js_of_ocaml), package(js_of_ocaml-ppx), byte, compile, extension:cmo, extension:ml, file:display.cmo, file:display.ml, implem, ocaml, quiet }
 ocamlfind ocamlc -c -package js_of_ocaml-ppx -package js_of_ocaml -o display.cmo display.ml
 # Target: display.byte, tags: { package(js_of_ocaml), package(js_of_ocaml-ppx), byte, dont_link_with, extension:byte, file:display.byte, link, ocaml, program, quiet }
