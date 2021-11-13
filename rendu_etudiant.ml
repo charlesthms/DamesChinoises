@@ -34,9 +34,6 @@ type case_coloree = case * couleur
 
 type configuration = case_coloree list * couleur list
 
-let (te:case) = (-4, 8, 1) ;;
-let (test:case_coloree) = (te, Marron) ;;
-let configuration_initial = (([test], [ Vert; Jaune; Rouge; Noir; Bleu; Marron ]):configuration)
 let liste_joueurs (_, l) = l
 
 let est_dans_losange = fun (a:case) ->
@@ -47,8 +44,7 @@ let est_dans_etoile = fun (a:case) ->
   let (i, j, k) = a in
   (est_dans_losange a || (j >= -dim && j <= dim && i >= -dim && i <= dim || k >= -dim && k <= dim && i >= -dim && i <= dim)) && i+j+k=0 ;;
 
-let quelle_couleur = fun (a:case) (config:configuration) ->
-  if est_dans_etoile a then Libre else Dehors;;
+
 
 
 type coup = Du of case * case | Sm of case list
@@ -59,40 +55,90 @@ let rec tourne_case n (case:case) = let (i, j, k) = case in
   if n=1 then ((i+j, j+k, k+i):case) else tourne_case (n-1) (i+j, j+k, k+i) ;;
 
 let rec case_modif lst = match lst with
-  [] -> []
+    [] -> []
   | h::t -> let (c, y) = (h:case_coloree) in ((tourne_case 1 c, y):case_coloree) :: case_modif t ;;
 let tourne_config (config:configuration) = 
   let (cc, x) = config in ((case_modif cc,  x):configuration) ;;
 
-(* TEST *)
-let cfg = [ (((6, -3, -3), Vert):case_coloree); (((5, -3, -3), Vert):case_coloree); (((4, -3, -3), Vert):case_coloree) ] ;;
-case_modif cfg ;;
-
 let sont_cases_voisines (c1:case) (c2:case) = let (i1, j1, k1) = c1 in let (i2, j2, k2) = c2 in
   i2 = i1 + 1 || j2 = j1 +1 || k2 = k1 + 1  ;;
 
-(* TEST *)
-let (c1:case) = (-4, 3, 1) ;;
-let (c2:case) = (-5, 3, 2) ;;
 
-sont_cases_voisines c1 c2 ;;
 
 let rec case_dans_config (c:case) (cfg:configuration) = let (cc, couleur) = cfg in match cc with
-  [] -> false
+    [] -> false
   | h :: t -> 
     let (case, color) = h in 
     let (i, j, k) = case in
     let (x, y, z) = c in
-    i=x && j=y && k=z && not (color = Libre) || case_dans_config c (t, couleur) ;;
+    i=x && j=y && k=z || case_dans_config c (t, couleur) ;;
 
-case_dans_config te configuration_initial ;;
+
+(* let quelle_couleur = fun (a:case) (config:configuration) ->
+   if est_dans_etoile a then Libre else Dehors;; *)
 
 let rec quelle_couleur (c:case) (cfg:configuration) = let (cc, couleur) = cfg in match cc with
-  [] -> Dehors
+    [] -> Dehors
   | h :: t -> 
-    let (case, color) = h in
-    let (x, y, z) = case in
+    let (case_local, color) = h in
+    let (x, y, z) = case_local in
     let (i, j, k) = c in
-    if i=x && j=y && k=z && (case_dans_config c cfg) then color else quelle_couleur c (t, couleur) ;;
+    if x=i && y=j && z=k then color else if est_dans_etoile c then Libre else quelle_couleur c (t, couleur) ;;
 
-quelle_couleur te configuration_initial ;;
+
+let rec remplir_triangle_aux (cfg:configuration) col (case:case) = let (cc, col1) = cfg in match cc with
+    [] -> []
+  | h :: t ->  
+    let (c, col2) = h in
+    let (x, y, z) = c in
+    let (i, j, k) = case in
+
+    if x < i+dim && y < j+dim && k < k+dim then ( c, col) :: remplir_triangle_aux (t, col1) col case else remplir_triangle_aux (t, col1) col case;;
+
+let remplir_triangle (cfg:configuration) col (case:case) = let (cc, col1) = cfg in ((remplir_triangle_aux cfg col case, col1):configuration) ;;
+
+let (test:case) = (4, 4, 4)
+ let (cc:case_coloree) = (test,Vert);;
+
+let etape lst = let cfg = ([], lst) in
+  let remplir_init_aux lst = match lst with
+    | [] -> ([cc], lst)
+    | h :: t -> let (c:case) = (-6, 3, 3) in remplir_triangle cfg h c
+  in tourne_config (remplir_init_aux lst) ;;
+
+let rec remplir_init lst = match lst with
+  [] -> []
+  | h :: t -> let (cc, _) = (etape lst) in List.append cc (remplir_init t) ;;
+
+etape [ Vert; Jaune; Rouge; Noir; Bleu; Marron ] ;;
+
+
+
+
+let rec est_dep_unit_aux (cfg:configuration) (c1:case) = let (cc,col) = cfg in match col with
+    [] -> false
+  | a::b -> a = quelle_couleur c1 cfg ;;
+
+let est_dep_unit (cfg:configuration) (c1:case) (c2:case) = 
+  sont_cases_voisines c1 c2 && est_dep_unit_aux cfg c1 && quelle_couleur c2 cfg = Libre && est_dans_losange c2;;
+
+
+let rec fait_dep_unit_aux (cfg:configuration) (c1:case) (c2:case) = let (cc,col) = cfg in match cc with
+    [] -> []
+  | h :: t ->
+    let (case_local, color) = h in
+    let (x, y, z) = case_local in
+    let (i, j, k) = c1 in
+    let (a,b,c) = c2 in
+
+    if x=i && y=j && z=k then quelle_couleur c2 cfg :: fait_dep_unit_aux (t,col) c1 c2 
+    else if x=a && y=b && z=c then quelle_couleur c1 cfg :: fait_dep_unit_aux (t,col) c1 c2 
+    else fait_dep_unit_aux (t,col) c1 c2 ;;
+
+let fait_dep_unit_aux (cfg:configuration) (c1:case) (c2:case) = let (cc, col) = cfg in (fait_dep_unit_aux cfg c1 c2, col);;
+
+
+
+
+
+
