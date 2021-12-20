@@ -120,11 +120,81 @@ let fait_dep_unit (cfg:configuration) (c1:case) (c2:case) =
   (fait_dep_unit_aux cfg c1 c2 (quelle_couleur c1 cfg) (quelle_couleur c2 cfg)) ;;
 
 
-
-
 type coup = 
   | Du of case * case 
   | Sm of case list
+
+
+let gagnant _ = Libre ;;
+
+
+let configuration_initial =
+  remplir_init [ Vert ; Jaune ; Rouge ; Noir ; Bleu ; Marron ] ;;
+
+(* PARTIE II *)
+
+let add_case (c1:case) (c2:case) = 
+  let (a, b, c) = c1 in 
+  let (x, y ,z) = c2 in
+  ((a+x, b+y, c+z):case)  ;;
+
+let diff_case (c1:case) (c2:case) = 
+  let (a, b, c) = c1 in 
+  let (x, y ,z) = c2 in
+  ((a-x, b-y, c-z):case) ;;
+
+let calcul_pivot (c1:case) (c2:case) = 
+  let (a, b, c) = c1 in 
+  let (x, y ,z) = c2 in
+  if (a = x) then Some ((a, (y+b) /2, (c+z)/2 ):case)
+  else if (b=y) then Some ((a+x)/2, b, (c+z) /2)
+  else if (c=z) then Some ((a+x)/2, (b+y)/2, c) else None ;;
+
+let distance (c1:case) (c2:case) =
+  let (a, b, c) = c1 in 
+  let (x, y ,z) = c2 in
+  if (a = x) then abs (b-y)
+  else if (b=y) then abs (a-x)
+  else if (c=z) then abs (b-y) else 0 ;;
+
+let vect (c1:case) (c2:case) =
+  let (a, b, c) = c1 in 
+  let (x, y ,z) = c2 in
+  let dist = distance c1 c2 in 
+  if (a = x) then ((x, (y+dist) / dist, (z-dist) / dist):case)
+  else if (b=y) then ((x+dist) / dist, y, (z-dist) / dist)
+  else if (c=z) then ((x+dist) / dist, (y-dist) / dist, z) else (0,0,0) ;;
+
+let vec_et_dist (c1:case) (c2:case) = (vect c1 c2, distance c1 c2) ;;
+
+let est_libre_seg (c1:case) (c2:case) (cfg:configuration) = 
+  let (vect, dist) = vec_et_dist c1 c2 in
+  let rec aux c2 vect cfg n = 
+    if (n=0) then true
+    else 
+      let (x, y, z) = c2 in
+      let (a, b, c) = vect in
+      let (addedVect:case) = (x+a, y+b, z+c) in
+      if ((quelle_couleur addedVect cfg) != Libre) then false else aux addedVect vect cfg (n-1)
+  in aux c2 vect cfg (dist-1) ;;
+
+let est_aligne (c1:case) (c2:case) = let (a,b,c) = c1 in let (x,y,z) = c2 in
+  (a=x && b!=y && c!=z) || (a!=x && b=y && c!=z) || (a!=x && b!=y && c=z)
+
+let est_saut (c1:case) (c2:case) (cfg:configuration) = 
+  (calcul_pivot c1 c2 != None) && (est_aligne c1 c2) && (est_libre_seg c1 c2 cfg) ;;
+
+let rec est_saut_multiple lst (cfg:configuration) = match lst with
+  [] -> true
+  | h::q::t -> (est_saut h q cfg) && (est_saut_multiple (q::t) cfg) 
+  | h::t -> est_saut_multiple t cfg ;;
+
+
+let c1 = ((0,-2,2):case) ;;
+let c2 = ((0,0,0):case) ;;
+
+est_saut c1 c2 configuration_initial ;;
+
 
 let mis_a_jour_configuration (cfg:configuration) (coup:coup) = let (cc, colors) = cfg in
   (* Fait un coup unitaire en vérifiant que c'est un coup valide *)
@@ -133,7 +203,11 @@ let mis_a_jour_configuration (cfg:configuration) (coup:coup) = let (cc, colors) 
       Du (c1, c2) -> 
       if est_dep_unit cfg c1 c2 then Ok ((fait_dep_unit cfg c1 c2):configuration)
       else Error "Le coup n'est pas un déplacement unitaire valide."
-    | Sm lst -> Error "Todo"
+    | Sm lst -> 
+      if (est_saut_multiple lst cfg) then 
+        let (head, tail) = (List.hd lst, List.hd (List.rev lst)) in
+        Ok(fait_dep_unit cfg head tail)
+      else Error "Le coup n'est pas un saut multiple valide."
   in 
   (* Décale tous les élements de la liste des joueurs vers la gauche *)
   let rotate_list list = match list with 
@@ -143,9 +217,3 @@ let mis_a_jour_configuration (cfg:configuration) (coup:coup) = let (cc, colors) 
   in let test = make_coup coup in match test with 
     Ok value -> let (new_cfg, _) = value in let (updated_cc, colors) = tourne_config (new_cfg, colors) in Ok ((updated_cc, (rotate_list colors)):configuration) 
     | Error msg -> Error msg ;;
-
-let gagnant _ = Libre ;;
-
-
-let configuration_initial =
-  remplir_init [ Vert ; Jaune ; Rouge ; Noir ; Bleu ; Marron ] ;;
