@@ -253,7 +253,7 @@ let mis_a_jour_configuration (cfg:configuration) (coup:coup) = let (cc, colors) 
   (* Fait un coup unitaire en vérifiant que c'est un coup valide *)
   let make_coup coup =
     match coup with
-      Du (c1, c2) ->
+      Du (c1, c2) -> 
       (match calcul_pivot c1 c2 with
         Some c -> 
           if est_dep_unit cfg c1 c2 then Ok ((fait_dep_unit cfg c1 c2):configuration)
