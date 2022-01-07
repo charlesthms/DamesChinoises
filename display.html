@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html  lang="en">
+  <head profile="http://www.w3.org/2005/10/profile">
+    <title>Projet Dames Chinoises</title>
+    <meta charset="utf-8"/>
+    <script type="text/javascript" src="display.js"></script>
+    <style>
+      @font-face {
+          font-family: "dejavusansmono";
+          src: url("DejaVuSansMono.ttf") format("truetype");
+      }
+      pre {
+          font-family: dejavusansmono, monospace;
+      }
+      .pionVert {
+          background-color: green;
+      }
+      .pionJaune {
+          background-color: yellow;
+      }
+      .pionRouge {
+          background-color: red;
+      }
+      .pionNoir {
+          background-color: black;
+          color: white;
+      }
+      .pionMarron {
+          background-color: brown;
+      }
+      .pionBleu {
+          background-color: blue;
+          color:white;
+      }
+
+      .selected{
+          border-color:red;
+      }
+      .possible{
+          border-color:green;
+      }
+      .selectpos{
+          border-color:yellow;
+      }
+      .case {
+         padding: 4px 12px;
+         text-align: center;
+         text-decoration: none;
+         display: inline-block;
+         font-size: 16px;
+         width: 32px;
+         height: 32px;
+         margin: 12px 0px;
+         border-radius: 50px;
+      }
+      .marqeur {
+              padding:10px;
+              border: 2px solid #000;
+      }
+      tr {
+          padding:0px;
+      }
+      td {
+          padding:0px 0px;
+          text-align: center;
+      }
+      #plateau{
+         border: 2px solid #000;
+         border-radius: 50%;
+         display: inline-block;
+         padding: 0px 69px;
+         background-image: url(fond-bois2.jpg);
+      }
+      .console{
+              height: 200px;
+              width: 300px;
+      }
+      .consoleerr{
+          background: lightcoral;
+              height: auto;
+              width: 300px;
+      }
+      .main{
+          display:flex;
+      }
+
+    </style>
+  </head>
+  <body>
+  </body>
+</html>
